@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-//Plan Modifier for the Avatar Object in the object resource
+// Plan Modifier for the Avatar Object in the object resource.
 func SyncAvatarPlanModifier() planmodifier.String {
 	return &syncAvatarPlanModifier{}
 }
@@ -73,7 +73,7 @@ func (d *syncAvatarPlanModifier) PlanModifyString(ctx context.Context, req planm
 	resp.PlanValue = types.StringUnknown()
 }
 
-//Plan modifier for the label parameter in the object resource
+// Plan modifier for the label parameter in the object resource.
 func SyncLabelPlanModifier() planmodifier.String {
 	return &syncLabelPlanModifier{}
 }
@@ -111,6 +111,11 @@ func (d *syncLabelPlanModifier) PlanModifyString(ctx context.Context, req planmo
 
 		elements := make([]objectAttributeModel, 0, len(state.Attributes.Elements()))
 		diags = state.Attributes.ElementsAs(ctx, &elements, false)
+
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
 		id := "0"
 		for _, element := range elements {

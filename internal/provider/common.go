@@ -98,7 +98,7 @@ func FillInformationsForDataObject(ctx context.Context, object *objectDataResour
 		}
 
 		var valueSet basetypes.SetValue
-		valueSet, diags = types.SetValueFrom(ctx, types.ObjectType{objectValueAttrTypes()}, values)
+		valueSet, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: objectValueAttrTypes()}, values)
 		if diags.HasError() {
 			return diags
 		}
@@ -120,7 +120,7 @@ func FillInformationsForDataObject(ctx context.Context, object *objectDataResour
 		attributes = append(attributes, attribut)
 	}
 
-	object.Attributes, diags = types.SetValueFrom(ctx, types.ObjectType{objectAttributeAttrTypes()}, attributes)
+	object.Attributes, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: objectAttributeAttrTypes()}, attributes)
 	return diags
 }
 
@@ -212,7 +212,7 @@ func FillInformationsForObject(ctx context.Context, object *objectResourceModel,
 		}
 
 		var valueSet basetypes.SetValue
-		valueSet, diags = types.SetValueFrom(ctx, types.ObjectType{objectValueAttrTypes()}, values)
+		valueSet, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: objectValueAttrTypes()}, values)
 		if diags.HasError() {
 			return diags
 		}
@@ -234,7 +234,7 @@ func FillInformationsForObject(ctx context.Context, object *objectResourceModel,
 		attributes = append(attributes, attribut)
 	}
 
-	object.Attributes, diags = types.SetValueFrom(ctx, types.ObjectType{objectAttributeAttrTypes()}, attributes)
+	object.Attributes, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: objectAttributeAttrTypes()}, attributes)
 	return diags
 }
 

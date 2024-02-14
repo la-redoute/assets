@@ -48,7 +48,7 @@ type features struct {
 	ObsoleteObjectTypeAttributeId string
 }
 
-// Custom client to store the workspace ID
+// Custom client to store the workspace ID.
 type AssetsProviderClient struct {
 	Client      *assets.Client
 	WorkspaceId string

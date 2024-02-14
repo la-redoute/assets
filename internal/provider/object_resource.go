@@ -548,10 +548,10 @@ func (r *objectResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if !r.features.DestroyObject {
 		payload := models.ObjectPayloadScheme{
 			Attributes: []*models.ObjectPayloadAttributeScheme{
-				&models.ObjectPayloadAttributeScheme{
+				{
 					ObjectTypeAttributeID: r.features.ObsoleteObjectTypeAttributeId,
 					ObjectAttributeValues: []*models.ObjectPayloadAttributeValueScheme{
-						&models.ObjectPayloadAttributeValueScheme{
+						{
 							Value: "Obsolete",
 						},
 					},
@@ -627,8 +627,8 @@ func objectValueAttrTypes() map[string]attr.Type {
 		"value":            types.StringType,
 		"display_value":    types.StringType,
 		"search_value":     types.StringType,
-		"group":            types.ObjectType{groupAttrTypes()},
-		"status":           types.ObjectType{statusAttrTypes()},
+		"group":            types.ObjectType{AttrTypes: groupAttrTypes()},
+		"status":           types.ObjectType{AttrTypes: statusAttrTypes()},
 		"additional_value": types.StringType,
 	}
 }
@@ -640,6 +640,6 @@ func objectAttributeAttrTypes() map[string]attr.Type {
 		"id":                          types.StringType,
 		"object_type_attribute_id":    types.StringType,
 		"object_type_attribute_label": types.BoolType,
-		"object_attribute_values":     types.SetType{types.ObjectType{objectValueAttrTypes()}},
+		"object_attribute_values":     types.SetType{ElemType: types.ObjectType{AttrTypes: objectValueAttrTypes()}},
 	}
 }

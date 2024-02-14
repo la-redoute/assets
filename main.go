@@ -8,7 +8,7 @@ import (
 	"flag"
 	"log"
 
-	"assets/internal/provider"
+	"terraform-provider-assets/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
@@ -39,7 +39,7 @@ func main() {
 
 	opts := providerserver.ServeOpts{
 		// TODO: Update this string with the published name of your provider.
-		Address: "registry.terraform.io/la-redoute/assets",
+		Address: "registry.terraform.io/la-redoute/terraform-provider-assets",
 		Debug:   debug,
 	}
 

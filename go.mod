@@ -1,4 +1,4 @@
-module assets
+module terraform-provider-assets
 
 go 1.20
 

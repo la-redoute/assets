@@ -212,12 +212,16 @@ func (r *objectSchemaResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	objectSchema, _, err := r.client.ObjectSchema.Get(ctx, r.workspace_id, state.Id.ValueString())
+	objectSchema, response, err := r.client.ObjectSchema.Get(ctx, r.workspace_id, state.Id.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Reading objectschema",
-			"Could not read objectschema, unexpected error: "+err.Error(),
-		)
+		if response.Code != 404 {
+			resp.Diagnostics.AddError(
+				"Error Reading objectschema",
+				"Could not read objectschema, unexpected error: "+err.Error(),
+			)
+		} else {
+			resp.State.RemoveResource(ctx)
+		}
 		return
 	}
 

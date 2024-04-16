@@ -471,12 +471,16 @@ func (r *objectResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	object, _, err := r.client.Object.Get(ctx, r.workspace_id, state.Id.ValueString())
+	object, response, err := r.client.Object.Get(ctx, r.workspace_id, state.Id.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Reading object",
-			"Could not read object, unexpected error: "+err.Error(),
-		)
+		if response.Code != 404 {
+			resp.Diagnostics.AddError(
+				"Error Reading object",
+				"Could not read object, unexpected error: "+err.Error(),
+			)
+		} else {
+			resp.State.RemoveResource(ctx)
+		}
 		return
 	}
 

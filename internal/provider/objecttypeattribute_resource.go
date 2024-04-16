@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/ctreminiom/go-atlassian/assets"
 	"github.com/ctreminiom/go-atlassian/pkg/infra/models"
@@ -74,28 +73,6 @@ type objectTypeAttributeResourceModel struct {
 	QlQuery                 types.String `tfsdk:"ql_query"`
 	Options                 types.String `tfsdk:"options"`
 	Position                types.Int64  `tfsdk:"position"`
-}
-
-type ObjectTypeAttributePayloadScheme struct {
-	Name                    string   `json:"name,omitempty"`
-	Label                   bool     `json:"label,omitempty"`
-	Description             string   `json:"description,omitempty"`
-	Type                    *int     `json:"type,omitempty"`
-	DefaultTypeId           *int     `json:"defaultTypeId,omitempty"`
-	TypeValue               string   `json:"typeValue,omitempty"`
-	TypeValueMulti          []string `json:"typeValueMulti,omitempty"`
-	AdditionalValue         string   `json:"additionalValue,omitempty"`
-	MinimumCardinality      *int     `json:"minimumCardinality,omitempty"`
-	MaximumCardinality      *int     `json:"maximumCardinality,omitempty"`
-	Suffix                  string   `json:"suffix,omitempty"`
-	IncludeChildObjectTypes bool     `json:"includeChildObjectTypes,omitempty"`
-	Hidden                  bool     `json:"hidden,omitempty"`
-	UniqueAttribute         bool     `json:"uniqueAttribute,omitempty"`
-	Summable                bool     `json:"summable,omitempty"`
-	RegexValidation         string   `json:"regexValidation,omitempty"`
-	QlQuery                 string   `json:"qlQuery,omitempty"`
-	Iql                     string   `json:"iql,omitempty"`
-	Options                 string   `json:"options,omitempty"`
 }
 
 type defaultTypeModel struct {
@@ -378,7 +355,7 @@ func (r *objectTypeAttributeResource) Schema(_ context.Context, _ resource.Schem
 	}
 }
 
-func createObjectTypeAttributePayload(ctx context.Context, objectTypeAttribute objectTypeAttributeResourceModel, payload *ObjectTypeAttributePayloadScheme) diag.Diagnostics {
+func createObjectTypeAttributePayload(ctx context.Context, objectTypeAttribute objectTypeAttributeResourceModel, payload *models.ObjectTypeAttributePayloadScheme) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	payload.Name = objectTypeAttribute.Name.ValueString()
@@ -446,7 +423,7 @@ func (r *objectTypeAttributeResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	var payload ObjectTypeAttributePayloadScheme
+	var payload models.ObjectTypeAttributePayloadScheme
 
 	diags = createObjectTypeAttributePayload(ctx, plan, &payload)
 	resp.Diagnostics.Append(diags...)
@@ -454,18 +431,7 @@ func (r *objectTypeAttributeResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	endpoint := fmt.Sprintf("jsm/assets/workspace/%v/v1/objecttypeattribute/%v", r.workspace_id, plan.ObjectTypeId.ValueString())
-	request, err := r.client.NewRequest(ctx, http.MethodPost, endpoint, "", payload)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error creating objecttypeattribute request",
-			"Could not create objecttypeattribute, unexpected error: "+err.Error(),
-		)
-		return
-	}
-
-	objectTypeAttribute := new(models.ObjectTypeAttributeScheme)
-	_, err = r.client.Call(request, objectTypeAttribute)
+	objectTypeAttribute, _, err := r.client.ObjectTypeAttribute.Create(ctx, r.workspace_id, plan.ObjectTypeId.ValueString(), &payload)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating objecttypeattribute",
@@ -498,12 +464,16 @@ func (r *objectTypeAttributeResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	objectTypeAttributes, _, err := r.client.ObjectType.Attributes(ctx, r.workspace_id, state.ObjectTypeId.ValueString(), nil)
+	objectTypeAttributes, response, err := r.client.ObjectType.Attributes(ctx, r.workspace_id, state.ObjectTypeId.ValueString(), nil)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Reading objecttype",
-			"Could not read objecttype, unexpected error: "+err.Error(),
-		)
+		if response.Code != 404 {
+			resp.Diagnostics.AddError(
+				"Error Reading objecttype",
+				"Could not read objecttype, unexpected error: "+err.Error(),
+			)
+		} else {
+			resp.State.RemoveResource(ctx)
+		}
 		return
 	}
 
@@ -548,7 +518,7 @@ func (r *objectTypeAttributeResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	var payload ObjectTypeAttributePayloadScheme
+	var payload models.ObjectTypeAttributePayloadScheme
 
 	diags = createObjectTypeAttributePayload(ctx, plan, &payload)
 	resp.Diagnostics.Append(diags...)
@@ -556,22 +526,11 @@ func (r *objectTypeAttributeResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	endpoint := fmt.Sprintf("jsm/assets/workspace/%v/v1/objecttypeattribute/%v/%v", r.workspace_id, plan.ObjectTypeId.ValueString(), plan.Id)
-	request, err := r.client.NewRequest(ctx, http.MethodPut, endpoint, "", payload)
+	objectTypeAttribute, _, err := r.client.ObjectTypeAttribute.Update(ctx, r.workspace_id, plan.ObjectTypeId.ValueString(), plan.Id.ValueString(), &payload)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating objecttypeattribute",
-			"Could not update objecttypeattribute, unexpected error: "+err.Error(),
-		)
-		return
-	}
-
-	objectTypeAttribute := new(models.ObjectTypeAttributeScheme)
-	_, err = r.client.Call(request, objectTypeAttribute)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error updating objecttypeattribute",
-			"Could not updating objecttypeattribute, unexpected error: "+err.Error(),
+			"Error Updating objecttype",
+			"Could not update objecttype, unexpected error: "+err.Error(),
 		)
 		return
 	}
